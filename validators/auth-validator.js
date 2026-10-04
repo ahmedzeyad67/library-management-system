@@ -1,0 +1,72 @@
+import { body } from "express-validator";
+
+const registerUser = [
+  body("firstName")
+    .trim()
+    .notEmpty()
+    .withMessage("First name is required")
+    .isLength({ min: 2, max: 25 })
+    .withMessage("First name must be between 2 and 25 characters long"),
+  body("lastName")
+    .trim()
+    .notEmpty()
+    .withMessage("Last name is required")
+    .isLength({ min: 2, max: 25 })
+    .withMessage("Last name must be between 2 and 25 characters long"),
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Please enter a valid email")
+    .isLength({ max: 50 })
+    .withMessage("Email must be at most 50 characters long"),
+  body("phone")
+    .trim()
+    .notEmpty()
+    .withMessage("Phone number is required")
+    .isMobilePhone("any")
+    .withMessage("Please enter a valid phone number")
+    .isLength({ max: 20 })
+    .withMessage("Phone number must be at most 20 characters long"),
+  body("password")
+    .notEmpty()
+    .withMessage("Password is required")
+    .isLength({ min: 8 })
+    .withMessage("Password must be at least 8 characters long"),
+  body("role")
+    .optional()
+    .isIn(["user", "admin"])
+    .withMessage("Role must be either 'user' or 'admin'"),
+];
+
+const loginUser = [
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Please enter a valid email"),
+  body("password").notEmpty().withMessage("Password is required"),
+];
+
+const logoutUser = [
+  body("refreshToken")
+    .trim()
+    .notEmpty()
+    .withMessage("Refresh token is required"),
+];
+
+const refreshUser = [
+  body("refreshToken")
+    .trim()
+    .notEmpty()
+    .withMessage("Refresh token is required"),
+];
+
+export default {
+  registerUser,
+  loginUser,
+  logoutUser,
+  refreshUser,
+};
