@@ -30,7 +30,42 @@ function isValidISBN(value) {
   return false;
 }
 
-const bookFieldsValidation = [
+const getBooksQuery = [
+  query("page")
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage("Page must be a positive integer"),
+  query("limit")
+    .optional()
+    .isInt({ min: 1, max: 100 })
+    .withMessage("Limit must be a positive integer between 1 and 100"),
+  query("sort")
+    .optional()
+    .isIn(["title", "author", "publishedYear", "createdAt"])
+    .withMessage("Invalid sort field"),
+  query("order")
+    .optional()
+    .isIn(["asc", "desc"])
+    .withMessage("Order must be either asc or desc"),
+];
+
+const getActiveBooks = [
+  ...getBooksQuery,
+  query("isActive")
+    .not()
+    .exists()
+    .withMessage("isActive query parameter is not allowed"),
+];
+
+const getAllBooks = [
+  ...getBooksQuery,
+  query("isActive")
+    .optional()
+    .isBoolean()
+    .withMessage("isActive must be a boolean value"),
+];
+
+const createBook = [
   body("title")
     .trim()
     .notEmpty()
@@ -54,11 +89,13 @@ const bookFieldsValidation = [
       return true;
     }),
   body("category")
+    .trim()
     .notEmpty()
     .withMessage("Category is required")
-    .isLength({ max: 25 })
-    .withMessage("Category must be at most 25 characters long"),
+    .isLength({ min: 2, max: 25 })
+    .withMessage("Category must be between 2 and 25 characters long"),
   body("description")
+    .trim()
     .notEmpty()
     .withMessage("Description is required")
     .isLength({ min: 10, max: 500 })
@@ -71,32 +108,70 @@ const bookFieldsValidation = [
   body("totalCopies")
     .isInt({ min: 1 })
     .withMessage("Total copies must be at least 1"),
-  body("availableCopies")
-    .isInt({ min: 0 })
-    .withMessage("Available copies must be a reasonable number")
-    .custom((value, { req }) => {
-      if (value > req.body.totalCopies) {
-        throw new Error("Available copies cannot exceed total copies");
+  body("coverImage")
+    .optional()
+    .trim()
+    .isURL()
+    .withMessage("Cover image must be a valid URL"),
+  body()
+    .custom((value) => !Object.hasOwn(value, "availableCopies"))
+    .withMessage("availableCopies field cannot be set manually"),
+];
+
+const updateBook = [
+  body("title")
+    .optional()
+    .trim()
+    .isLength({ min: 2, max: 50 })
+    .withMessage("Title must be between 2 and 50 characters long"),
+  body("author")
+    .optional()
+    .trim()
+    .isLength({ min: 2, max: 25 })
+    .withMessage("Author name must be between 2 and 25 characters long"),
+  body("isbn")
+    .optional()
+    .trim()
+    .custom((value) => {
+      if (!isValidISBN(value)) {
+        throw new Error("Invalid ISBN format");
       }
       return true;
     }),
-];
-
-const getBooks = [
-  query("page")
+  body("category")
+    .optional()
+    .trim()
+    .isLength({ min: 2, max: 25 })
+    .withMessage("Category must be between 2 and 25 characters long"),
+  body("description")
+    .optional()
+    .trim()
+    .isLength({ min: 10, max: 500 })
+    .withMessage("Description must be between 10 and 500 characters long"),
+  body("publishedYear")
+    .optional()
+    .isInt({ min: 1000, max: new Date().getFullYear() })
+    .withMessage("Published year must be a valid year"),
+  body("totalCopies")
     .optional()
     .isInt({ min: 1 })
-    .withMessage("Page must be a positive integer"),
-  query("limit")
+    .withMessage("Total copies must be at least 1"),
+  body("coverImage")
     .optional()
-    .isInt({ min: 1, max: 100 })
-    .withMessage("Limit must be a positive integer between 1 and 100"),
+    .trim()
+    .isURL()
+    .withMessage("Cover image must be a valid URL"),
+  body()
+    .custom((value) => !Object.hasOwn(value, "availableCopies"))
+    .withMessage("availableCopies field cannot be set manually"),
+  body()
+    .custom((value) => Object.keys(value).length > 0)
+    .withMessage("At least one field must be provided for update"),
 ];
-const createBook = [...bookFieldsValidation];
-const updateBook = [...bookFieldsValidation];
 
 export default {
-  getBooks,
+  getActiveBooks,
+  getAllBooks,
   createBook,
   updateBook,
 };

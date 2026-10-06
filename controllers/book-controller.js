@@ -1,6 +1,15 @@
 import asyncWrapper from "../middlewares/async-wrapper.js";
 import bookService from "../services/book-service.js";
 
+const getActiveBooks = asyncWrapper(async (req, res) => {
+  const data = await bookService.getActiveBooks(req.query);
+
+  res.json({
+    status: "success",
+    data,
+  });
+});
+
 const getAllBooks = asyncWrapper(async (req, res) => {
   const data = await bookService.getAllBooks(req.query);
 
@@ -28,16 +37,24 @@ const updateBook = asyncWrapper(async (req, res) => {
   res.json({ status: "success", data: { book: updatedBook } });
 });
 
-const deleteBook = asyncWrapper(async (req, res) => {
-  await bookService.deleteBook(req.params.bookId);
+const activateBook = asyncWrapper(async (req, res) => {
+  const updatedBook = await bookService.activateBook(req.params.bookId);
 
-  res.json({ status: "success", data: null });
+  res.json({ status: "success", data: { book: updatedBook } });
+});
+
+const deactivateBook = asyncWrapper(async (req, res) => {
+  const updatedBook = await bookService.deactivateBook(req.params.bookId);
+
+  res.json({ status: "success", data: { book: updatedBook } });
 });
 
 export default {
+  getActiveBooks,
   getAllBooks,
   getBookById,
   createBook,
   updateBook,
-  deleteBook,
+  activateBook,
+  deactivateBook,
 };

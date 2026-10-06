@@ -29,7 +29,13 @@ router.post(
   authController.refresh,
 );
 
-// router.patch("/change-password", authController.changePassword);
+router.patch(
+  "/change-password",
+  authenticate,
+  authValidator.changePassword,
+  validate,
+  authController.changePassword,
+);
 
 router.get("/me", authenticate, authController.getMe);
 

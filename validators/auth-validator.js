@@ -64,9 +64,23 @@ const refreshUser = [
     .withMessage("Refresh token is required"),
 ];
 
+const changePassword = [
+  body("currentPassword")
+    .notEmpty()
+    .withMessage("Current password is required"),
+  body("newPassword")
+    .notEmpty()
+    .withMessage("New password is required")
+    .isLength({ min: 8 })
+    .withMessage("New password must be at least 8 characters long")
+    .custom((value, { req }) => value !== req.body.currentPassword)
+    .withMessage("New password cannot be the same as the current password"),
+];
+
 export default {
   registerUser,
   loginUser,
   logoutUser,
   refreshUser,
+  changePassword,
 };

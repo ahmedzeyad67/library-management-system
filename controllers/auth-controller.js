@@ -50,7 +50,13 @@ const getMe = asyncWrapper(async (req, res) => {
   res.status(200).json({ status: "success", data: user });
 });
 
-// const changePassword = asyncWrapper(async (req, res) => {});
+const changePassword = asyncWrapper(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  await authService.changePassword(req.user.id, currentPassword, newPassword);
+
+  res.status(200).json({ status: "success", data: null });
+});
 
 export default {
   register,
@@ -58,5 +64,5 @@ export default {
   logout,
   refresh,
   getMe,
-  // changePassword,
+  changePassword,
 };

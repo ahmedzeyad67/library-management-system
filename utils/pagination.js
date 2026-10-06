@@ -3,8 +3,12 @@ const paginate = async (model, query = {}, options = {}) => {
   const limit = Number(options.limit) || 10;
   const skip = (page - 1) * limit;
 
+  const sort = options.sort
+    ? { [options.sort]: options.order === "desc" ? -1 : 1 }
+    : {};
+
   const [data, total] = await Promise.all([
-    model.find(query).skip(skip).limit(limit),
+    model.find(query).sort(sort).skip(skip).limit(limit),
     model.countDocuments(query),
   ]);
 

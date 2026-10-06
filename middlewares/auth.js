@@ -20,14 +20,11 @@ const authenticate = asyncWrapper((req, res, next) => {
 
 const authorize = (...allowedRoles) => {
   return (req, res, next) => {
-    if (allowedRoles.includes(req.user.role)) {
-      if (req.user.role === "user" && req.user.id !== req.params.userId) {
-        throw new AppError("Access denied", 403);
-      }
-
-      return next();
+    if (!allowedRoles.includes(req.user.role)) {
+      throw new AppError("Access denied", 403);
     }
-    throw new AppError("Access denied", 403);
+
+    next();
   };
 };
 

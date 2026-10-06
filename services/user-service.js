@@ -3,24 +3,36 @@ import AppError from "../utils/app-error.js";
 import paginate from "../utils/pagination.js";
 
 const getAllUsers = async (queryParams) => {
-  const { page, limit, ...query } = queryParams;
+  const { page, limit, sort, order, search, ...query } = queryParams;
 
-  const data = await paginate(User, query, { page, limit });
+  if (search) {
+    const searchParts = search.trim().split(/\s+/);
 
-  return data;
-};
+    const searchQueries = [
+      { email: { $regex: search, $options: "i" } },
+      { phone: { $regex: search, $options: "i" } },
+    ];
 
-const getUserById = async (userId) => {
-  const user = await User.findById(userId);
-
-  if (!user) {
-    throw new AppError("User not found", 404);
+    if (searchParts.length > 1) {
+      searchQueries.push({
+        $and: [
+          { firstName: { $regex: searchParts[0], $options: "i" } },
+          { lastName: { $regex: searchParts[1], $options: "i" } },
+        ],
+      });
+    } else {
+      searchQueries.push(
+        { firstName: { $regex: search, $options: "i" } },
+        { lastName: { $regex: search, $options: "i" } },
+      );
+    }
+    query.$or = searchQueries;
   }
 
-  return user;
+  return paginate(User, query, { page, limit, sort, order });
 };
 
-const updateUser = async (userId, userData) => {
+const updateMe = async (userId, userData) => {
   const updatedUser = await User.findByIdAndUpdate(userId, userData, {
     new: true,
     runValidators: true,
@@ -37,7 +49,7 @@ const updateUserStatus = async (userId, isActive) => {
   const user = await User.findByIdAndUpdate(
     userId,
     { isActive },
-    { new: true },
+    { returnDocument: "after", runValidators: true },
   );
 
   if (!user) {
@@ -48,21 +60,16 @@ const updateUserStatus = async (userId, isActive) => {
 };
 
 const activateUser = async (userId) => {
-  const user = await updateUserStatus(userId, true);
-
-  return user;
+  return updateUserStatus(userId, true);
 };
 
 const deactivateUser = async (userId) => {
-  const user = await updateUserStatus(userId, false);
-
-  return user;
+  return updateUserStatus(userId, false);
 };
 
 export default {
   getAllUsers,
-  getUserById,
-  updateUser,
+  updateMe,
   activateUser,
   deactivateUser,
 };

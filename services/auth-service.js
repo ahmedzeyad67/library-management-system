@@ -82,10 +82,29 @@ const getMe = async (userId) => {
   return user;
 };
 
+const changePassword = async (userId, currentPassword, newPassword) => {
+  const user = await User.findById(userId).select("+password");
+
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  const isMatch = await bcrypt.compare(currentPassword, user.password);
+  if (!isMatch) {
+    throw new AppError("Current password is incorrect", 401);
+  }
+
+  user.password = newPassword;
+  await user.save();
+
+  await RefreshToken.deleteMany({ user: userId });
+};
+
 export default {
   registerUser,
   loginUser,
   logoutUser,
   refreshUserTokens,
   getMe,
+  changePassword,
 };

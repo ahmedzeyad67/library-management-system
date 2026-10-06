@@ -10,14 +10,8 @@ const getAllUsers = asyncWrapper(async (req, res) => {
   });
 });
 
-const getUserById = asyncWrapper(async (req, res) => {
-  const user = await userService.getUserById(req.params.userId);
-
-  res.json({ status: "success", data: { user } });
-});
-
-const updateUser = asyncWrapper(async (req, res) => {
-  const updatedUser = await userService.updateUser(req.params.userId, req.body);
+const updateMe = asyncWrapper(async (req, res) => {
+  const updatedUser = await userService.updateMe(req.user.id, req.body);
 
   res.json({ status: "success", data: { user: updatedUser } });
 });
@@ -36,8 +30,7 @@ const deactivateUser = asyncWrapper(async (req, res) => {
 
 export default {
   getAllUsers,
-  getUserById,
-  updateUser,
+  updateMe,
   deactivateUser,
   activateUser,
 };

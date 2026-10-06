@@ -1,32 +1,40 @@
 import { Router } from "express";
 import { authenticate, authorize } from "../middlewares/auth.js";
 import usersController from "../controllers/user-controller.js";
+import usersValidator from "../validators/user-validator.js";
+import validate from "../middlewares/validate.js";
 
 const router = Router();
 
-router
-  .route("/")
-  .get(authenticate, authorize("admin"), usersController.getAllUsers);
+router.get(
+  "/",
+  authenticate,
+  authorize("admin"),
+  usersValidator.getAllUsers,
+  validate,
+  usersController.getAllUsers,
+);
 
-router
-  .route("/:userId")
-  .get(authenticate, authorize("admin"), usersController.getUserById)
-  .patch(authenticate, authorize("admin"), usersController.updateUser);
+router.patch(
+  "/me",
+  authenticate,
+  usersValidator.updateMe,
+  validate,
+  usersController.updateMe,
+);
 
-router
-  .route("/:userId/activate")
-  .patch(
-    authenticate,
-    authorize("admin", "user"),
-    usersController.activateUser,
-  );
+router.patch(
+  "/activate/:userId",
+  authenticate,
+  authorize("admin"),
+  usersController.activateUser,
+);
 
-router
-  .route("/:userId/deactivate")
-  .patch(
-    authenticate,
-    authorize("admin", "user"),
-    usersController.deactivateUser,
-  );
+router.patch(
+  "/deactivate/:userId",
+  authenticate,
+  authorize("admin"),
+  usersController.deactivateUser,
+);
 
 export default router;
